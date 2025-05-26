@@ -82,8 +82,14 @@ function Training()
     TrainerID = GetNearestClassTrainer().ID;
     TrainerName = GetNearestClassTrainer().Name;
     GoToNPC(TrainerID,TrainerName);
+    SleepPlugin(2000);
     UseMacro("Gossip1");
+    UseMacro("Gossip1");
+    UseMacro("Gossip1");
+    UseMacro("Gossip1");
+    SleepPlugin(2000);
     UseMacro("TrainMe");
+    SleepPlugin(2000);
 end
 --------------------------------------------------------------------------------------
 LevelTarget = 1
