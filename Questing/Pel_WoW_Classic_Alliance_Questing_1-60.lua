@@ -78,6 +78,14 @@ function UseHearthStone()
         SleepPlugin(100);
     end;
 end;
+function Training()
+    TrainerID = GetNearestClassTrainer().ID;
+    TrainerName = GetNearestClassTrainer().Name;
+    GoToNPC(TrainerID,TrainerName);
+    UseMacro("Gossip1");
+    UseMacro("TrainMe");
+end
+--------------------------------------------------------------------------------------
 LevelTarget = 1
 function LevelCheck()
     if Player.Level >= LevelTarget then
@@ -321,11 +329,7 @@ if not HasPlayerFinishedQuest(1097) then
             GoToNPC(54,"Corina Steele"); --Manual Sell Step
         end 
         if IsOnQuest(35) and not IsOnQuest(37) then
-            TrainerID = GetNearestClassTrainer().ID;
-            TrainerName = GetNearestClassTrainer().Name;
-            GoToNPC(TrainerID,TrainerName);
-            UseMacro("Gossip1");
-            UseMacro("TrainMe");
+            Training(); Log("Training Class Skills");
         end
         if not HasPlayerFinishedQuest(76) then 
             QuestGoToPoint(-9096.079, -564.0419, 62.24914); -- Scout Through the Jasperlode Mine
@@ -459,6 +463,12 @@ if not HasPlayerFinishedQuest(1097) then
             TurnInQuestUsingDB(176); Log("Completing: [10+]Hogger");
         end
         TurnInQuestUsingDB(1097); Log("Completing: [10]Elmore's Task");
+        if SafetyGrind == "true" then
+            LevelTarget = 14
+            AddNameToAvoidWhiteList("Defias Rogue Wizard");
+            Log("Safety Grind is True: Grinding to Level "..LevelTarget.." before Heading to Westfall");
+            GrindAndGather(TableToList({474}),100,TableToFloatArray({-9122.16, -1019.184, 72.52368}),false,"LevelCheck",true);
+        end
 end
 ------------------------------------------------------------------
 ------------------------------------------------------------------
@@ -474,17 +484,26 @@ if not HasPlayerFinishedQuest(140) then
         TurnInQuestUsingDB(36); Log("Turn-in: [14]Westfall Stew");
         AcceptQuestUsingDB(22); Log("Accepting: [12]Goretusk Liver Pie");
         AcceptQuestUsingDB(38); Log("Accepting: [14]Westfall Stew");
+        if IsOnQuest(38) and not IsOnQuest(12) then
+            GoToNPC(523,"Thor"); --Discover Westfall Flight Point
+        end
         --DiscoverFlightPoint("Sentinel Hill"); Log("Discovering Flight Point: Sentinel Hill");
         AcceptQuestUsingDB(153); Log("Accepting: [12]Red Leather Bandanas");
         TurnInQuestUsingDB(109); Log("Turn-in: [12]Report to Gryan Stoutmantle");
         AcceptQuestUsingDB(12); Log("Accepting: [12]The People's Militia");
         AcceptQuestUsingDB(102); Log("Accepting: [14]Patrolling Westfall");
         CompleteObjectiveOfQuest(64,1); Log("Completing Objective of [12]The Forgotten Heirloom: Retrieve the pocket watch");
-        if not CanTurnInQuest(153) and not HasPlayerFinishedQuest(153) then
+        if not HasPlayerFinishedQuest(153) then
             AddNameToAvoidWhiteList("Defias Trapper");
             AddNameToAvoidWhiteList("Defias Smuggler");
-            QuestGoToPoint(-10007.86, 1406.651, 40.75225);
-            CompleteObjectiveOfQuest(153,1); Log("Completing Objective of [12]Red Linen Bandanas: Collect 6 Red Leather Bandanas");
+            function KillDefiasUntilBandanas()
+                if ItemCount("Red Linen Bandana") >= 15 then
+                    return false; -- Stop grinding when we have enough bandanas
+                else
+                    return true; -- Continue grinding until we have enough bandanas
+                end
+            end
+            GrindAndGather(TableToList({504,95}),200,TableToFloatArray({-10007.86, 1406.651, 40.75225}),false,"KillDefiasUntilBandanas",true);
         end
         CompleteObjectiveOfQuest(12,1); Log("Completing Objective of [12]The People's Militia: Defeat 15 Defias Bandits");
         CompleteObjectiveOfQuest(12,2); Log("Completing Objective of [12]The People's Militia: Defeat 15 Defias Bandits");
@@ -493,7 +512,6 @@ if not HasPlayerFinishedQuest(140) then
         CompleteObjectiveOfQuest(38,2); Log("Completing Objective of [14]Westfall Stew: Gather ingredients");
         CompleteObjectiveOfQuest(38,3); Log("Completing Objective of [14]Westfall Stew: Gather ingredients");
         CompleteObjectiveOfQuest(38,4); Log("Completing Objective of [14]Westfall Stew: Gather ingredients");
-        
         CompleteObjectiveOfQuest(102,1); Log("Completing Objective of [14]Patrolling Westfall: Defeat Gnolls");
         TurnInQuestUsingDB(12); Log("Turn-in: [12]The People's Militia");
         AcceptQuestUsingDB(13); Log("Accepting: [14]The People's Militia");
@@ -507,17 +525,21 @@ if not HasPlayerFinishedQuest(140) then
         AcceptQuestUsingDB(6281); Log("Accepting: [10]Continue to Stormwind");
         if IsOnQuest(6281) == true and IsOnQuest(6261) ~= true then
             GoToNPC(523,"Thor"); --Westfall FlightMaster
-            FlyTo(Stormwind); Log("Flying to: Stormwind");
+            SleepPlugin(1000); -- Slight Pause to ensure the flight master is ready
+            UseMacro("Stormwind");
         end
         TurnInQuestUsingDB(6281); Log("Turn-in: [10]Continue to Stormwind");
         AcceptQuestUsingDB(6261); Log("Accepting: [10]Dungar Longdrink");
-        --TrainSkills(); Log("Training class skills in Stormwind");
+        if IsOnQuest(6261) and not IsOnQuest(6285)  then
+            Training(); Log("Training Class Skills");
+        end
         TurnInQuestUsingDB(6261); Log("Turn-in: [10]Dungar Longdrink");
         AcceptQuestUsingDB(6285); Log("Accepting: [10]Return to Lewis");
         --Step 2.5: Whoops, still stuck on the plains of Westfall
         if IsOnQuest(6285) == true and IsOnQuest(14) ~= true then
             GoToNPC(352,"Dungar Longdrink"); --Westfall FlightMaster
-            FlyTo(Westfall); Log("Flying to: Westfall");
+            SleepPlugin(1000); -- Slight Pause to ensure the flight master is ready
+            UseMacro("Sentinel Hill"); Log("Flying to: Westfall");
         end
         TurnInQuestUsingDB(6285); Log("Turn-in: [10]Return to Lewis");
         TurnInQuestUsingDB(64); Log("Turn-in: [12]The Forgotten Heirloom");
@@ -534,18 +556,12 @@ if not HasPlayerFinishedQuest(140) then
         TurnInQuestUsingDB(38); Log("Turn-in: [14]Westfall Stew");
         TurnInQuestUsingDB(102); Log("Turn-in: [14]Patrolling Westfall");
         --Its the Eye of the Grinder its the Thrill of the Fight, gonna shank crabs until Level 19!
-        -------if Player.Level >= 15 and Player.Level < 19 then
-        -------    Log("Current Level: " .. Player.Level .. " Grinding to 19...");
-        -------AddNameToAvoidWhiteList("Sea Crawler")
-        -------    local InRangeSpawns = {}
-        -------    local IDs = {}
-        -------    IDs[1] = 831
-        -------    --Starting Point--
-        -------    local StartingPoint = {}
-        -------    StartingPoint[1] = -9942.369; StartingPoint[2] = 1884.301; StartingPoint[3] = 6.735732
-        -------    StartingFloat = TableToFloatArray(StartingPoint)
-        -------    GrindAndGather(TableToList(IDs),50,StartingFloat)
-        -------end
+        if SafetyGrind == "true" then
+            LevelTarget = 18
+            AddNameToAvoidWhiteList("Sea Crawler");
+            Log("Safety Grind is True: Grinding to Level "..LevelTarget.." before Heading to Westfall");
+            GrindAndGather(TableToList({831}),50,TableToFloatArray({-9942.369, 1884.301, 6.7357328}),false,"LevelCheck",true);
+        end
         --
     --Step 3-3: The Militant People
         CompleteObjectiveOfQuest(13,1); Log("Completing Objective of [14]The People's Militia: Defeat 15 Defias Pillagers and 15 Defias Looters");
@@ -563,11 +579,10 @@ if not HasPlayerFinishedQuest(140) then
         TurnInQuestUsingDB(14); Log("Turn-in: [17]The People's Militia");
     --Step 3-4: In Loch Step
         AcceptQuestUsingDB(353); Log("Accept: [15]Stormpike's Delivery");
-        if IsOnQuest(353) == true and IsOnQuest(2039) ~= true then
+        if IsOnQuest(353) and not IsOnQuest(2039) then
             if GetZoneID() == 1453 then
                 GoToNPC(352,"Dungar Longdrink"); --Stormwind FlightMaster
-                FlyTo(Ironforge);
-            elseif GetZoneID() == 1455 then
+                UseMacro("Ironforge"); --Flying to Ironforge
             else
                 QuestGoToPoint(-8395.126, 568.393, 91.53883); --SW Deeprun Tram Entrance
                 PopMessage("Please Manually Navigate to the Deeprun Tram.  If you already have the Ironforge Flightpoint, that is fine too");
@@ -615,7 +630,7 @@ if not HasPlayerFinishedQuest(140) then
             KillMobsUntilItem("Spider Ichor",KillForestLurker,3);
         end
         AcceptQuestUsingDB(418); Log("Accept: [11]Thelsamar Blood Sausages");
-        TurnInQuestUsingDB(418); Log("Turn-in: [11]Thelsamar Blood Sausages");
+        CompleteEntireQuest(418); Log("Completing Objective of [11]Thelsamar Blood Sausages: (3)Bear Meat, (3)Boar Intestines, (3)Spider Ichor");
         --AcceptQuestUsingDB(1339); Log("Accept: [15]Mountaineer Stormpike's Task");
         AcceptQuestUsingDB(416); Log("Accept: [11]Rat Catching"); --THis is trying to use Option 2 even though there's no option 2 available....
         --See if I can drop quest 
@@ -652,7 +667,13 @@ if not HasPlayerFinishedQuest(140) then
         DoObjective(TroggsShaman); DoObjective(TroggsBonesnapper);-- Quest Objective(s):Log("Completing Objective [15]In Defense of the King's Land
         TurnInQuestUsingDB(263); Log("Turn-in: [15]In Defense of the King's Land");
     --Step 3-5: And I would walk 500 miles, and I would walk 500 more
+        if IsOnQuest(65) and not IsOnQuest(132) then
+            GoToNPC(1572,"Thorgrum Borrelson"); --Westfall FlightMaster
+            SleepPlugin(1000); -- Slight Pause to ensure the flight master is ready
+            UseMacro("Redridge"); Log("Flying to: Redridge Mountains");
+        end
         if not HasPlayerFinishedQuest(65) then
+            GoToNPC(6727,"Innkeeper Brianna"); --Redridge Mountains Innkeeper
             PopMessage("Wiley the Black is Upstairs and pathing to him is not working.  Please compelte mauinally.");
             TurnInQuestUsingDB(65); Log("Turn-in: [18]The Defias Brotherhood");
             AcceptQuestUsingDB(132); Log("Accepting: [18]The Defias Brotherhood"); --Turnin in WF
@@ -660,6 +681,9 @@ if not HasPlayerFinishedQuest(140) then
         --While in Redridge
         AcceptQuestUsingDB(244); Log("Accepting: [16]Encroaching Gnolls");
         if not HasPlayerFinishedQuest(3741) or not HasPlayerFinishedQuest(125) then
+            if HasItem("Elixir of Water Breathing") then
+                UseItem("Elixir of Water Breathing");
+            end
             --PopMessage("Quests (3741)Hillary's Necklace and (125)The Lost Tools Need Manual Completion.  Please complete now.");
             CompleteEntireQuest(3741); Log("Completing: [16]Hillary's Necklace");
             CompleteEntireQuest(125); Log("Completing: [16]The Lost Tools");
@@ -681,23 +705,25 @@ if not HasPlayerFinishedQuest(140) then
     AcceptQuestUsingDB(131); Log("Accepting: [15]Delivering Daffodils");
     TurnInQuestUsingDB(131); Log("Turn-in: [15]Delivering Daffodils");
     --What the Redridge
-    --if CanTurnInQuest(132) == true then
-    --    RedridgeFP();
-    --    FlyToDestination("Westfall");
-    --end
+    if CanTurnInQuest(132) then
+        GoToNPC(931,"Ariena Stormfeather");
+        UseMacro("Sentinel Hill"); --Flying to Westfall
+    end
     TurnInQuestUsingDB(132); Log("Turn-in: [18]The Defias Brotherhood");
     AcceptQuestUsingDB(135); Log("Accepting: [18]The Defias Brotherhood"); --Turnin SW
-    --if (CanTurnInQuest(135) == true and GetZoneID() == 1432) then
-    --    WestfallFP();
-    --    FlyToDestination("Stormwind");
-    --end
+    if (CanTurnInQuest(135) == true and GetZoneID() == 1432) then
+        GoToNPC(523,"Thor"); --Westfall FlightMaster
+        UseMacro("Stormwind");
+    end
     TurnInQuestUsingDB(135); Log("Turn-in: [18]The Defias Brotherhood");
-    AcceptQuestUsingDB(142); Log("Accepting: [18]The Defias Brotherhood"); --Turnin WF
-    CompleteObjectiveOfQuest(142,1); Log("Completing Objective of [18]The Defias Brotherhood: Retrieve the Defias Orders");
+    AcceptQuestUsingDB(141); Log("Accepting: [18]The Defias Brotherhood"); --Turnin WF
     TurnInQuestUsingDB(141); Log("Turn-in: [18]The Defias Brotherhood");
-    AcceptQuestUsingDB(155); Log("Accept: [18]The Defias Brotherhood");
+    AcceptQuestUsingDB(142); Log("Accepting: [18]The Defias Brotherhood");
+    CompleteObjectiveOfQuest(142,1); Log("Completing Objective of [18]The Defias Brotherhood: Retrieve the Defias Orders");
+    TurnInQuestUsingDB(142); Log("Turn-in: [18]The Defias Brotherhood");
+    AcceptQuestUsingDB(155); Log("Accepting: [18]The Defias Brotherhood");
     --Step 4.5: Just to be the man who walked 1000 miles to meet you at the Deadmines
-    if HasPlayerFinishedQuest(155) ~= true and CanTurnInQuest(155) ~= true then    
+    if not HasPlayerFinishedQuest(155) and not CanTurnInQuest(155) then    
         PopMessage("Quest 155-[18]The Defias Brotherhood: Escort the Defias Traitor needs to be done manually.");
         PopMessage("If you don't want to do this manually, then you'll need to grind to L20/L21 to make up for the rest of Westfall");
     end
@@ -711,9 +737,9 @@ if not HasPlayerFinishedQuest(140) then
         KillMobsUntilItem("Flask of Oil",OilFarm,5);
     end
     if HasPlayerFinishedQuest(104) ~= true then    
-        --QuestGoToPoint(-11326.05, 1789.546, 22.20564);    
-        PopMessage("Captain Grayson Lighthouse Quests: Pickup and turn-in needs to be done manually.");
-        PopMessage("Profile will get you to just before the swim, go pick up then swim back to shore.  Bot will then go and do its thing.  Once all are done, swim back to island manually and turn-in.");
+        QuestGoToPoint(-11326.05, 1789.546, 22.20564);    
+        --PopMessage("Captain Grayson Lighthouse Quests: Pickup and turn-in needs to be done manually.");
+        --PopMessage("Profile will get you to just before the swim, go pick up then swim back to shore.  Bot will then go and do its thing.  Once all are done, swim back to island manually and turn-in.");
         AcceptQuestUsingDB(104); Log("Accept: [20]The Coastal Menance");
         AcceptQuestUsingDB(103); Log("Accept: [16]Keeper of the Flame");
         TurnInQuestUsingDB(103); Log("Turn-in: [16]Keeper of the Flame");
@@ -728,16 +754,24 @@ if not HasPlayerFinishedQuest(140) then
         TurnInQuestUsingDB(152); Log("Turn-in: [19]The Coast Isn't Clear");
         TurnInQuestUsingDB(104); Log("Turn-in: [20]The Coastal Menance");
     end
-    if (HasPlayerFinishedQuest(136) ~= true and HasItem("Captain Sander's Treasure Map") ~= true and IsOnQuest(136) ~= true) then 
+    if not HasPlayerFinishedQuest(136) then
+        function GetTheMap()
+            if HasItem("Captain Sander's Treasure Map") then
+                return false -- Stop grinding when we have the map
+            elseif IsOnQuest(136) then
+                return false -- Stop grinding if we are on the quest
+            else
+                return true
+            end
+        end
         Murlocs={458,171};
-        KillMurlocs=CreateObjective("KillMobsAndLoot",1,1,1,136,TableToList(Murlocs));
-        KillMobsUntilItem("Captain Sander's Treasure Map",KillMurlocs,1);
+        AddNameToAvoidWhiteList("Murloc Hunter");
+        AddNameToAvoidWhiteList("Murloc Warrior");
+        GrindAndGather(TableToList(Murlocs),200,TableToFloatArray({-8989.872, -764.0568, 74.30352}),false,"GetTheMap",true);
+        AcceptQuestUsingDB(123); Log("Accepting: [10]Captain Sander's Hidden Treasure")
     end
-    if HasItem("Captain Sander's Treasure Map") == true then
-        UseItem("Captain Sander's Treasure Map");
-    end
-    --AcceptQuestUsingDB(136); -- [16] Captain Sanders' Hidden Treasure
-    if HasPlayerFinishedQuest(136)==false then
+    AcceptQuestUsingDB(136); -- [16] Captain Sanders' Hidden Treasure
+    if not HasPlayerFinishedQuest(136) then
         QuestGoToPoint(-10512.88, 2110.36, 2.696788);
         function UseFootLocker() 
             local Objects = GetObjectList();
