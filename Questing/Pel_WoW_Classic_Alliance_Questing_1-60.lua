@@ -187,6 +187,9 @@ if not HasPlayerFinishedQuest(2158) then
             AcceptQuestUsingDB(3100); --A: Simple Letter
             TurnInQuestUsingDB(3100); --T: Simple Letter
         end
+        if IsOnQuest(7) then
+            Traning(); --Training Class Skills
+        end
     ------------------------------------------------------------------
     ------------------------------------------------------------------
     --Step 1-3: Kobolds, Defias, and Grapes Oh My!
